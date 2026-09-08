@@ -1,0 +1,110 @@
+{
+  "script_version": "1.5.0",
+  "generated_at": "2026-09-08 14:35:48",
+  "device": "/dev/nvme0n1",
+  "device_type": "nvme",
+  "test_config": {
+    "test_items": [
+      "smart"
+    ],
+    "fw_image": null,
+    "fw_action": "upgrade",
+    "perf_state": "both",
+    "perf_runtime": 60,
+    "perf_qd": 32,
+    "precondition": true,
+    "dry_run": false
+  },
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "error": 0,
+    "skip": 0,
+    "by_item": {
+      "smart": "PASS"
+    },
+    "start_time": "2026-09-08 14:35:43",
+    "end_time": "2026-09-08 14:35:48",
+    "total_duration_sec": 5.224219
+  },
+  "results": [
+    {
+      "test_item": "smart",
+      "test_name": "设备智能健康信息",
+      "device": "/dev/nvme0n1",
+      "start_time": "2026-09-08 14:35:43",
+      "end_time": "2026-09-08 14:35:48",
+      "duration_sec": 5.224219,
+      "status": "PASS",
+      "details": {
+        "smart_before": {
+          "power_cycles": 136,
+          "power_on_hours": 117,
+          "temperature": 304,
+          "available_spare": 10,
+          "media_errors": 5353
+        },
+        "core_check_before": {
+          "temperature_c": 31,
+          "temperature_status": "normal",
+          "available_spare_pct": 10,
+          "available_spare_status": "normal",
+          "media_errors": 5353,
+          "power_cycles": 136,
+          "power_on_hours": 117,
+          "issues": [
+            "存在介质错误: 5353"
+          ]
+        },
+        "basic_rw": {
+          "size_mb": 1024,
+          "write_ok": true,
+          "read_ok": true
+        },
+        "smart_after": {
+          "power_cycles": 136,
+          "power_on_hours": 117,
+          "temperature": 305,
+          "available_spare": 10,
+          "media_errors": 5353
+        },
+        "smart_comparison": {
+          "power_cycles": {
+            "before": 136,
+            "after": 136,
+            "delta": 0
+          },
+          "power_on_hours": {
+            "before": 117,
+            "after": 117,
+            "delta": 0
+          },
+          "media_errors": {
+            "before": 5353,
+            "after": 5353,
+            "delta": 0
+          },
+          "available_spare": {
+            "before": 10,
+            "after": 10,
+            "delta": 0
+          }
+        },
+        "core_check_after": {
+          "temperature_c": 32,
+          "temperature_status": "normal",
+          "available_spare_pct": 10,
+          "available_spare_status": "normal",
+          "media_errors": 5353,
+          "media_errors_status": "historical",
+          "media_errors_note": "历史累积介质错误 5353，R/W 后无新增",
+          "power_cycles": 136,
+          "power_on_hours": 117,
+          "issues": []
+        }
+      },
+      "error_message": null
+    }
+  ]
+}
