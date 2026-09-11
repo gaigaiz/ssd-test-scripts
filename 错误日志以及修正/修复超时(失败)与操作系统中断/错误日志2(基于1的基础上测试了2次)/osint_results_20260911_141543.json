@@ -1,0 +1,121 @@
+{
+  "total_cycles": 2,
+  "current_cycle": 3,
+  "phase": "done",
+  "results": [
+    {
+      "cycle": 1,
+      "sleep_type": "s3",
+      "success": false,
+      "identity_ok": true,
+      "fs_ok": false,
+      "integrity_ok": false,
+      "smart_ok": false,
+      "sleep_info": "wake_ok (18.2s)",
+      "identity_info": {
+        "device_present": true,
+        "by_id_links": [
+          "lrwxrwxrwx 1 root root  13  9月 11 13:44 nvme-eui.494e4e4f47524954 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:46 nvme-eui.494e4e4f47524954-part1 -> ../../nvme0n1p1",
+          "lrwxrwxrwx 1 root root  13  9月 11 13:44 nvme-UBPKI04500HCNT1-HHH-UGN_64400003 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  13  9月 11 13:44 nvme-UBPKI04500HCNT1-HHH-UGN_64400003_1 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:46 nvme-UBPKI04500HCNT1-HHH-UGN_64400003_1-part1 -> ../../nvme0n1p1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:46 nvme-UBPKI04500HCNT1-HHH-UGN_64400003-part1 -> ../../nvme0n1p1"
+        ],
+        "identity_stable": true
+      },
+      "fs_info": {
+        "partition_ok": true,
+        "fs_mount_ok": false,
+        "fsck_ok": false,
+        "details": {
+          "partition_table": "gpt",
+          "fsck_output": "fsck from util-linux 2.37.2\next2fs_check_desc: Corrupt group descriptor: bad block for block bitmap\nfsck.ext4: Group descriptors look bad... trying backup blocks...\nBlock bitmap for group 3584 is not in group.  (block 312517069513289728)\nRelocate? no\n\nInode bitmap for group 3584 is not in group.  (b"
+        }
+      },
+      "integrity_info": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "missing": 1,
+        "details": {
+          "/mnt/ssd_osint/osint_integrity_test.bin": "MISSING"
+        }
+      },
+      "smart_info": {
+        "media_errors": null,
+        "available_spare": null,
+        "power_cycles": 139,
+        "temperature_c": 45
+      }
+    },
+    {
+      "cycle": 2,
+      "sleep_type": "s3",
+      "success": false,
+      "identity_ok": true,
+      "fs_ok": false,
+      "integrity_ok": false,
+      "smart_ok": false,
+      "sleep_info": "wake_ok (17.7s)",
+      "identity_info": {
+        "device_present": true,
+        "by_id_links": [
+          "lrwxrwxrwx 1 root root  13  9月 11 13:47 nvme-eui.494e4e4f47524954 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:47 nvme-eui.494e4e4f47524954-part1 -> ../../nvme0n1p1",
+          "lrwxrwxrwx 1 root root  13  9月 11 13:47 nvme-UBPKI04500HCNT1-HHH-UGN_64400003 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  13  9月 11 13:47 nvme-UBPKI04500HCNT1-HHH-UGN_64400003_1 -> ../../nvme0n1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:47 nvme-UBPKI04500HCNT1-HHH-UGN_64400003_1-part1 -> ../../nvme0n1p1",
+          "lrwxrwxrwx 1 root root  15  9月 11 13:47 nvme-UBPKI04500HCNT1-HHH-UGN_64400003-part1 -> ../../nvme0n1p1"
+        ],
+        "identity_stable": true
+      },
+      "fs_info": {
+        "partition_ok": true,
+        "fs_mount_ok": false,
+        "fsck_ok": false,
+        "details": {
+          "partition_table": "gpt",
+          "fsck_output": "fsck from util-linux 2.37.2\next2fs_check_desc: Corrupt group descriptor: bad block for block bitmap\nfsck.ext4: Group descriptors look bad... trying backup blocks...\nBlock bitmap for group 3584 is not in group.  (block 312517069513289728)\nRelocate? no\n\nInode bitmap for group 3584 is not in group.  (b"
+        }
+      },
+      "integrity_info": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "missing": 1,
+        "details": {
+          "/mnt/ssd_osint/osint_integrity_test.bin": "MISSING"
+        }
+      },
+      "smart_info": {
+        "media_errors": null,
+        "available_spare": null,
+        "power_cycles": 140,
+        "temperature_c": 40
+      }
+    }
+  ],
+  "created_at": "2026-09-11 13:44:41",
+  "integrity_checksums": {
+    "/mnt/ssd_osint/osint_integrity_test.bin": "8068df182dfdca49868a7abdbdcbad460f10f8a503cd038374e41a1b04e35857"
+  },
+  "final_functional_test": {
+    "capacity_ok": true,
+    "smart_ok": false,
+    "seq_read_ok": true,
+    "seq_write_ok": true,
+    "details": {
+      "capacity_bytes": 500107862016,
+      "smart": {
+        "media_errors": 5353,
+        "available_spare": 85,
+        "power_cycles": 140,
+        "temperature_c": 52
+      },
+      "seq_read_bw_mbps": 2115.39,
+      "seq_write_bw_mbps": 359.57
+    },
+    "overall": "FAIL"
+  }
+}
