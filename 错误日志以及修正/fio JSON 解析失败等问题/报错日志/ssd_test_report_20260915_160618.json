@@ -1,0 +1,45 @@
+{
+  "script_version": "1.8.4",
+  "generated_at": "2026-09-15 16:06:18",
+  "device": "/dev/nvme0n1",
+  "device_type": "nvme",
+  "test_config": {
+    "test_items": [
+      "rw"
+    ],
+    "fw_image": null,
+    "fw_action": "upgrade",
+    "perf_state": "both",
+    "perf_runtime": 60,
+    "precondition": true,
+    "dry_run": false
+  },
+  "summary": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "error": 0,
+    "skip": 0,
+    "by_item": {
+      "rw": "FAIL"
+    },
+    "start_time": "2026-09-15 16:06:02",
+    "end_time": "2026-09-15 16:06:18",
+    "total_duration_sec": 16.801602
+  },
+  "results": [
+    {
+      "test_item": "rw",
+      "test_name": "读/写测试",
+      "device": "/dev/nvme0n1",
+      "start_time": "2026-09-15 16:06:02",
+      "end_time": "2026-09-15 16:06:18",
+      "duration_sec": 16.801602,
+      "status": "FAIL",
+      "details": {
+        "失败详情": "文件周期: 2 项失败: 256MB 第1轮: JSON解析失败; 256MB 第2轮: JSON解析失败"
+      },
+      "error_message": "读/写测试存在失败项"
+    }
+  ]
+}

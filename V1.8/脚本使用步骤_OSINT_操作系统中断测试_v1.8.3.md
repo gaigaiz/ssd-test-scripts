@@ -1,6 +1,6 @@
 # 操作系统中断测试 (OSINT) 使用步骤
 
-> 基于 `ssd_test_v1.8.2.py` 脚本，对应 DVT/EVT 测试计划中 **S3/S4 OS Interruption** 测试项。
+> 基于 `ssd_test_v1.8.3.py` 脚本，对应 DVT/EVT 测试计划中 **S3/S4 OS Interruption** 测试项。
 
 ---
 

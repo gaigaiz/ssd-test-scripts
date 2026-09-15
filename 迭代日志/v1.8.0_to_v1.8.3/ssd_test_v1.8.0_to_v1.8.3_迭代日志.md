@@ -45,7 +45,7 @@
    - 任务列表展示（序号、备注、模式、块大小、QD、运行时间）
    - 「删除选中」按钮
    - 「清空全部」按钮
-   - 「导出JSON」按钮
+   - 「导出 JSON」按钮
 
 5. **配置持久化**
    - save/load config 支持持久化任务列表
@@ -65,7 +65,7 @@
 ### 新增功能
 
 1. **开始测试按钮上移**
-   - 「▶ 开始测试」按钮从底部控制栏移到**顶部设备选择栏右侧**
+   - 「▶ 开始测试」按钮从底部控制栏移到 **顶部设备选择栏右侧**
    - 按钮字号从 11 提升到 12，更醒目
    - 底部保留「■ 停止」「清空日志」「保存配置」「加载配置」「导出日志」「查看详细日志」等按钮
 
@@ -173,7 +173,7 @@ SMART: 介质错误=None, 可用备件=None%, 温度=45°C -> FAIL
 
 **修复**：
 1. **多字段名兼容查找**：介质错误依次尝试 `media_and_data_integrity_errors` / `media_errors` / `media_and_data_errors`；可用备件依次尝试 `available_spare` / `avail_spare` / `spare`
-2. **None 值兜底**：解析不到时视为正常值（介质错误=0，可用备件=100），不因此判 FAIL
+2. **None 值兜底**：解析不到时视为正常值（介质错误 = 0，可用备件 = 100），不因此判 FAIL
 3. **判定时双重保险**：`(info.get("media_errors") or 0) == 0` / `(info.get("available_spare") or 100) >= 10`
 
 ---
@@ -189,7 +189,7 @@ SMART: 介质错误=None, 可用备件=None%, 温度=45°C -> FAIL
 实际执行: 0 轮
 ```
 
-**根因**：上一次 v1.8.2 测试结束后，状态文件 `/var/lib/ssd_osint_state.json` 记录了 `phase="done", current_cycle=3, total_cycles=2`。v1.8.3 启动时加载到该状态，发现 `current_cycle (3) > total_cycles (2)`，循环 `for cycle in range(start_cycle, self.cycles + 1)` 直接不执行，跳过所有循环直接进入最终功能测试。用户看到"没有休眠"，实际是状态文件残留导致的。
+**根因**：上一次 v1.8.2 测试结束后，状态文件 `/var/lib/ssd_osint_state.json` 记录了 `phase="done", current_cycle=3, total_cycles=2`。v1.8.3 启动时加载到该状态，发现 `current_cycle (3) > total_cycles (2)`，循环 `for cycle in range(start_cycle, self.cycles + 1)` 直接不执行，跳过所有循环直接进入最终功能测试。用户看到 "没有休眠"，实际是状态文件残留导致的。
 
 **修复**：`run()` 方法加载状态后增加有效性检测，以下任一情况自动清除旧状态并重新初始化：
 - `phase == "done"`（上一次测试已完成）
@@ -209,11 +209,11 @@ SMART: 介质错误=5353(警告模式), 可用备件=85%, 温度=52°C -> OK
 ```
 （修复前为 `-> FAIL`，导致每轮都因介质错误判定失败）
 
-**根因**：用户的测试盘已知有 5353 个介质错误（`media_errors=5353`），原判定逻辑中介质错误 > 0 即 FAIL。用户希望**忽略介质错误，只验证休眠唤醒稳定性**。
+**根因**：用户的测试盘已知有 5353 个介质错误（`media_errors=5353`），原判定逻辑中介质错误 > 0 即 FAIL。用户希望 **忽略介质错误，只验证休眠唤醒稳定性**。
 
-**修复**：SMART 判定改为**警告模式**：
-- 介质错误 > 0 时输出 `[WARNING]` 日志告警，但**不影响 PASS/FAIL**
-- 可用备件 < 10% 和温度超出 0-70°C 仍为**硬性 FAIL 条件**（这两个是真正的健康指标）
+**修复**：SMART 判定改为 **警告模式**：
+- 介质错误 > 0 时输出 `[WARNING]` 日志告警，但 **不影响 PASS/FAIL**
+- 可用备件 < 10% 和温度超出 0-70°C 仍为 **硬性 FAIL 条件**（这两个是真正的健康指标）
 - 返回结果中增加 `media_errors_warning: true` 标记
 
 ---
@@ -228,7 +228,7 @@ SMART: 介质错误=5353(警告模式), 可用备件=85%, 温度=52°C -> OK
 休眠失败: wake_ok_but_mount_failed (17.5s): mount: /mnt/ssd_osint: mount(2) system call failed: Structure needs cleaning.
 ```
 
-**根因**：虽然休眠前做了 stop_io → sync → umount，但 fio 使用 `--direct=1` 大量写入（4 个 256MB 文件 + 持续混合读写，读 317MB/s 写 137MB/s），NVMe 设备**内部写缓存在 S3 休眠时可能未完全提交到 NAND**，导致 ext4 日志（journal）轻微不一致。唤醒后挂载时 ext4 检测到日志需要恢复，报 `Structure needs cleaning`。
+**根因**：虽然休眠前做了 stop_io → sync → umount，但 fio 使用 `--direct=1` 大量写入（4 个 256MB 文件 + 持续混合读写，读 317MB/s 写 137MB/s），NVMe 设备 **内部写缓存在 S3 休眠时可能未完全提交到 NAND**，导致 ext4 日志（journal）轻微不一致。唤醒后挂载时 ext4 检测到日志需要恢复，报 `Structure needs cleaning`。
 
 **修复**：`trigger_sleep()` 唤醒后挂载失败时，自动检测错误信息中是否包含 `Structure needs cleaning` / `needs cleaning`，如果是则：
 1. 先确保未挂载（`umount`）
@@ -244,7 +244,7 @@ SMART: 介质错误=5353(警告模式), 可用备件=85%, 温度=52°C -> OK
 
 **错误日志**：同 Bug 6（`Structure needs cleaning`）
 
-**根因**：`umount` 只能确保 Linux 页缓存和块层缓存刷新，但 NVMe 设备**内部写缓存**（device-level write cache）可能还有未提交到 NAND 的数据。S3 休眠时设备掉电或状态重置，这些未提交的数据丢失，导致文件系统不一致。
+**根因**：`umount` 只能确保 Linux 页缓存和块层缓存刷新，但 NVMe 设备 **内部写缓存**（device-level write cache）可能还有未提交到 NAND 的数据。S3 休眠时设备掉电或状态重置，这些未提交的数据丢失，导致文件系统不一致。
 
 **修复**：`umount` 后增加 `nvme flush <controller>` 命令，强制刷新 NVMe 设备内部写缓存，确保所有数据提交到 NAND 后再进入休眠。从源头减少文件系统不一致的概率。
 
@@ -271,9 +271,9 @@ SMART: 介质错误=5353(警告模式), 可用备件=85%, 温度=52°C -> OK
 错误信息: 0/0 轮通过，0 轮失败
 ```
 
-**根因**：原 `run_cycle()` 中，当 `trigger_sleep()` 返回 False（休眠/挂载失败）时，直接 `return False`，**没有构造和记录 cycle_result**，导致 `state["results"]` 为空。统计时 `total_executed = len(results) = 0`，显示"实际执行 0 轮"，用户无法看到失败轮次的详情。
+**根因**：原 `run_cycle()` 中，当 `trigger_sleep()` 返回 False（休眠/挂载失败）时，直接 `return False`，**没有构造和记录 cycle_result**，导致 `state["results"]` 为空。统计时 `total_executed = len(results) = 0`，显示 "实际执行 0 轮"，用户无法看到失败轮次的详情。
 
-**修复**：`trigger_sleep()` 失败时，构造一个失败的 `cycle_result`（所有检查项标记为 False，错误信息记录为"休眠/挂载失败，未执行检查"），追加到 `state["results"]` 并保存状态。统计时失败轮次正常计入，不再显示 0/0。
+**修复**：`trigger_sleep()` 失败时，构造一个失败的 `cycle_result`（所有检查项标记为 False，错误信息记录为 "休眠/挂载失败，未执行检查"），追加到 `state["results"]` 并保存状态。统计时失败轮次正常计入，不再显示 0/0。
 
 ---
 

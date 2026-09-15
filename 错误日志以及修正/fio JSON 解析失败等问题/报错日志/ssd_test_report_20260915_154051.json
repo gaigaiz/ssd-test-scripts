@@ -1,0 +1,43 @@
+{
+  "script_version": "1.8.3",
+  "generated_at": "2026-09-15 15:40:51",
+  "device": "/dev/nvme0n1",
+  "device_type": "nvme",
+  "test_config": {
+    "test_items": [
+      "rw"
+    ],
+    "fw_image": null,
+    "fw_action": "upgrade",
+    "perf_state": "both",
+    "perf_runtime": 60,
+    "precondition": true,
+    "dry_run": false
+  },
+  "summary": {
+    "total": 1,
+    "pass": 0,
+    "fail": 0,
+    "error": 1,
+    "skip": 0,
+    "by_item": {
+      "rw": "ERROR"
+    },
+    "start_time": "2026-09-15 15:40:51",
+    "end_time": "2026-09-15 15:40:51",
+    "total_duration_sec": 0.640908
+  },
+  "results": [
+    {
+      "test_item": "rw",
+      "test_name": "读/写测试",
+      "device": "/dev/nvme0n1",
+      "start_time": "2026-09-15 15:40:51",
+      "end_time": "2026-09-15 15:40:51",
+      "duration_sec": 0.640908,
+      "status": "ERROR",
+      "details": {},
+      "error_message": "'TestResult' object has no attribute 'add_detail'"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "script_version": "1.8.5",
+  "generated_at": "2026-09-15 16:32:31",
+  "device": "/dev/nvme0n1",
+  "device_type": "nvme",
+  "test_config": {
+    "test_items": [
+      "rw"
+    ],
+    "fw_image": null,
+    "fw_action": "upgrade",
+    "perf_state": "both",
+    "perf_runtime": 60,
+    "precondition": true,
+    "dry_run": false
+  },
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "error": 0,
+    "skip": 0,
+    "by_item": {
+      "rw": "PASS"
+    },
+    "start_time": "2026-09-15 16:32:21",
+    "end_time": "2026-09-15 16:32:31",
+    "total_duration_sec": 10.313343
+  },
+  "results": [
+    {
+      "test_item": "rw",
+      "test_name": "读/写测试",
+      "device": "/dev/nvme0n1",
+      "start_time": "2026-09-15 16:32:21",
+      "end_time": "2026-09-15 16:32:31",
+      "duration_sec": 10.313343,
+      "status": "PASS",
+      "details": {
+        "测试模式": "file_cycle",
+        "子项结果": "文件周期: 2 轮读写验证全部通过"
+      },
+      "error_message": "读/写测试全部通过（1 项）"
+    }
+  ]
+}
