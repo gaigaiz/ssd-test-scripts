@@ -15,8 +15,8 @@
 | 3 | 设备容量 | 通过 nvme-cli / 磁盘工具读取并校验容量 |
 | 4 | 完整性能特征 | FOB（出厂空白）与稳态下测量带宽、IOPS、延迟、QoS，支持多任务批量执行 |
 | 5 | 读/写测试 | 全磁盘写入+读取验证、多文件大小重复读写周期、24小时长期验证 |
-| 6 | 正常电源循环测试 | 持续混合读写下正常关机→断电→开机，循环检查数据完整性 |
-| 7 | 意外电源循环测试 (SPOR) | 读写过程中直接硬件断电，验证 PLP 掉电保护与 FTL 元数据备份能力 |
+| 6 | 正常电源循环测试 | 持续混合读写下正常关机→断电→开机，循环检查数据完整性，支持 ipmi/manual/enhanced 三种模式 |
+| 7 | 意外电源循环测试 (SPOR) | 读写过程中直接硬件断电，验证 PLP 掉电保护与 FTL 元数据备份能力，支持 timeboard/manual/enhanced 三种断电方式 |
 | 8 | 操作系统中断测试 (OSINT) | 持续 I/O 期间 S3/S4 休眠/唤醒的稳定性与数据完整性验证 |
 
 **双模式运行**：
@@ -36,13 +36,25 @@
 - GUI 布局彻底修复：从下往上 pack 策略，底部进度条/按钮/日志摘要全部可见
 - 新增 `_extract_fio_json()` 静态方法，兼容 fio 多 job 警告输出
 
+**v1.9 重大升级（真 FOB + SNIA 稳态 + 状态控制）**：
+- **真 FOB 状态进入**：使用 `nvme format --ses=1`（User Data Erase），失败自动回退 blkdiscard；支持 `--purge-method auto|user-data|blkdiscard`
+- **SNIA SSS PTS v2.0.2 合规稳态预处理**：WIPC（顺序写2遍）+ WDPC（多轮循环，3个跟踪变量测试点）+ 5轮滑动窗口稳态检测（Range≤20%、|Slope|≤10%），最多25轮
+- **GUI SSD 状态控制面板**：FOB（蓝）/Steady（绿）/Unknown（灰）状态可视化，按设备序列号持久化，支持手动"进入FOB"/"进入稳态"/"重置Unknown"
+- **开始测试三分支状态逻辑**：状态一致自动跳过预处理，状态不一致弹出确认，Unknown 直接测试
+- **电源循环三模式**：ipmi（远程控电）/manual（手动断电）/enhanced（增强模式，可配置 pattern 大小）
+- **SPOR 三模式**：timeboard（硬件定时断电）/manual（手动）/enhanced（增强）
+- **SMART 可配置忽视介质错误**：`--smart-ignore-media-errors`（默认 "5353"），支持多个错误号
+- **目标状态选项变更**：`--perf-state` 改为 fob/steady/unknown（默认 unknown），移除 both 模式
+- **新增操作模式**：`--action run-tests|enter-fob|enter-steady|status`
+- **9 项 Bug 修复**：脚本路径动态获取、fio json 格式兼容、异常 Traceback 输出、状态一致跳过擦除、GUI 布局重构等
+
 ## 安装方法
 
 ### 系统要求
 
-- 操作系统：Ubuntu 20.04 / 22.04 / 24.04 LTS
-- Python：≥ 3.8（仅标准库，GUI 使用 tkinter）
-- 权限：root 或 sudo 权限
+- 操作系统：Ubuntu 20.04 / 22.04 / 24.04 LTS（v1.9 推荐 22.04+）
+- Python：≥ 3.8（v1.9 要求 ≥ 3.10，仅标准库，GUI 使用 tkinter）
+- 权限：root 或 sudo 权限（nvme format 需要 root）
 
 ### 安装系统依赖
 
@@ -70,11 +82,12 @@ python3 --version
 | 稳定版本 | 覆盖测试项 | 适用场景 |
 |----------|-----------|----------|
 | `ssd_test_v1.5.3(SMART健康+设备容量).py` | SMART + 容量 | 基础健康检查 |
-| `ssd_test_v1.7.5(FOB_稳态性能测试）.py` | FOB + 稳态性能 | 性能特征测试 |
+| `ssd_test_v1.7.5(伪FOB_稳态性能测试）.py` | FOB + 稳态性能（伪FOB，仅 blkdiscard） | 旧版性能测试（不推荐） |
 | `ssd_test_v1.8.3(SMART+容量+操作系统中断).py` | SMART + 容量 + OSINT | 休眠唤醒稳定性验证 |
-| `ssd_test_v1.8.5(V1.8.3+读写).py` | SMART + 容量 + OSINT + 读写 | 全功能测试（推荐） |
+| `ssd_test_v1.8.5(V1.8.3+读写).py` | SMART + 容量 + OSINT + 读写 | 全功能测试 |
+| `ssd_test_v1.9.2(v1.8.5+真FOB_稳态性能测试).py` | 全部测试项 + 真FOB + SNIA稳态 + 状态控制 | **最新推荐全功能版** |
 
-完整全功能版本位于 `V1.8/ssd_test_v1.8.5(V1.8.3+读写).py`。
+完整全功能版本位于 `V1.9/V1.9.2/ssd_test_v1.9.2.py`。
 
 ### 命令行模式
 
@@ -96,6 +109,14 @@ sudo python3 ssd_test.py -d /dev/nvme0n1 -t osint --osint-cycles 10 --osint-slee
 
 # 电源循环测试（10次循环，IPMI 远程控电）
 sudo python3 ssd_test.py -d /dev/nvme0n1 -t powercycle --pc-cycles 10 --ipmi-host 192.168.1.100 -y
+
+# 电源循环测试（enhanced 增强模式，可配置 pattern 大小）
+sudo python3 ssd_test.py -d /dev/nvme0n1 -t powercycle --pc-power-mode enhanced --pc-pattern-size-gb 20 -y
+
+# v1.9 SSD 状态控制（进入 FOB / 进入稳态 / 查看状态）
+sudo python3 ssd_test.py -d /dev/nvme0n1 --action enter-fob -y
+sudo python3 ssd_test.py -d /dev/nvme0n1 --action enter-steady -y
+python3 ssd_test.py -d /dev/nvme0n1 --action status
 ```
 
 ### GUI 模式
@@ -115,11 +136,18 @@ GUI 支持：设备选择、测试项勾选、参数配置、批量性能任务�
 | `-y, --yes` | 跳过交互确认，自动执行 |
 | `--gui` | 启动可视化上位机模式 |
 | `--fw-image` | 固件升级镜像路径 |
-| `--perf-state` | 性能测试状态：`fob`/`steady`/`both` |
+| `--perf-state` | 性能测试目标状态：`fob`/`steady`/`unknown`（v1.9 默认 unknown，移除 both） |
 | `--perf-task-file` | 批量性能任务 JSON 文件路径 |
+| `--action` | v1.9 操作模式：`run-tests`/`enter-fob`/`enter-steady`/`status` |
+| `--purge-method` | v1.9 FOB 擦除方式：`auto`/`user-data`/`blkdiscard` |
+| `--steady-max-rounds` | v1.9 稳态 WDPC 最大轮数（默认 25） |
+| `--steady-point-duration` | v1.9 稳态每个测试点时长秒（默认 60） |
+| `--smart-ignore-media-errors` | v1.9 SMART 忽视的介质错误号（默认 "5353"） |
 | `--osint-cycles` | OSINT 休眠唤醒循环次数 |
 | `--osint-sleep-type` | OSINT 休眠类型：`s3`/`s4` |
 | `--pc-cycles` | 电源循环次数 |
+| `--pc-power-mode` | 电源循环模式：`ipmi`/`manual`/`enhanced` |
+| `--pc-pattern-size-gb` | enhanced 模式下 pattern 大小（GB） |
 | `--ipmi-host` | IPMI 远程管理地址 |
 
 ## 输入输出示例
@@ -184,21 +212,27 @@ sudo python3 ssd_test.py -d /dev/nvme0n1 -t osint --osint-cycles 2 --osint-sleep
 .
 ├── Stable version/          # 按测试项拆分的稳定版本
 │   ├── ssd_test_v1.5.3(SMART健康+设备容量).py
-│   ├── ssd_test_v1.7.5(FOB_稳态性能测试）.py
+│   ├── ssd_test_v1.7.5(伪FOB_稳态性能测试）.py
 │   ├── ssd_test_v1.8.3(SMART+容量+操作系统中断).py
-│   └── ssd_test_v1.8.5(V1.8.3+读写).py
+│   ├── ssd_test_v1.8.5(V1.8.3+读写).py
+│   └── ssd_test_v1.9.2(v1.8.5+真FOB_稳态性能测试).py
 ├── V1.0 ~ V1.5/             # 历史版本迭代
 ├── V1.6/                     # CrystalDiskMark 风格版本（已舍弃，见目录内说明）
-├── V1.7/                     # 稳态性能测试版本
-├── V1.8/                     # 最新全功能版本（v1.8.5，含读写测试）
+├── V1.7/                     # 稳态性能测试版本（伪FOB）
+├── V1.8/                     # v1.8 全功能版本（含读写测试）
 │   ├── ssd_test_v1.8.3(SMART+容量+操作系统中断).py
 │   ├── ssd_test_v1.8.5(V1.8.3+读写).py
 │   ├── 脚本使用步骤_OSINT_操作系统中断测试_v1.8.3.md
 │   └── 脚本使用步骤_读写测试_v1.8.5.md
+├── V1.9/                     # v1.9 最新全功能版本（真FOB + SNIA稳态 + 状态控制）
+│   ├── V1.9.0/               # Normal Power Cycle 改造（含代码修改说明、环境指南、执行计划）
+│   ├── V1.9.1/               # SPOR 三模式改造（含代码修改说明、环境指南、执行计划）
+│   └── V1.9.2/               # 真FOB + SNIA稳态 + GUI状态控制（含上位机指南、风险分析）
 ├── 迭代日志/                  # 版本迭代详细记录
 │   ├── v1.6.0_to_v1.7.5/
 │   ├── v1.8.0_to_v1.8.3/
-│   └── v1.8.3_to_v1.8.5/
+│   ├── v1.8.3_to_v1.8.5/
+│   └── v1.9,0_to_v1.9.2/
 ├── 错误日志以及修正/           # Bug 修复记录与对应错误日志
 │   ├── 修复SMART介质错误误判/
 │   ├── 修复超时(失败)与操作系统中断/
@@ -209,7 +243,7 @@ sudo python3 ssd_test.py -d /dev/nvme0n1 -t osint --osint-cycles 2 --osint-sleep
 
 ## 已知问题
 
-- **稳态预处理超时**：执行稳态预处理时可能出现超时，目前尚未完全解决
+- **稳态预处理未完整测试**：v1.9.2 已实现 SNIA 合规稳态预处理算法，已成功测试 FOB + Unknown 态性能测试，但由于时间原因尚未对稳态进行完整测试
 - **固件下载功能未测试**：目前未对固件下载功能进行测试
 - **电源循环测试受硬件限制**：由于硬件方面问题，无法测试正常电源循环和意外掉电循环测试
 
@@ -219,11 +253,14 @@ sudo python3 ssd_test.py -d /dev/nvme0n1 -t osint --osint-cycles 2 --osint-sleep
 
 | 版本 | 核心变更 |
 |------|----------|
+| **V1.9.2** | 重大升级：真 FOB（nvme format --ses=1）、SNIA SSS PTS v2.0.2 合规稳态预处理（WIPC+WDPC+5轮滑动窗口检测）、GUI SSD 状态控制面板（FOB/Steady/Unknown 可视化与手动控制）、开始测试三分支状态逻辑、SMART 可配置忽视介质错误、目标状态改为 fob/steady/unknown、9 项 Bug 修复 |
+| V1.9.1 | SPOR 意外电源循环三模式改造（timeboard/manual/enhanced） |
+| V1.9.0 | Normal Power Cycle 正常电源循环三模式改造（ipmi/manual/enhanced，可配置 pattern 大小） |
 | **V1.8.5** | fio JSON 解析真正根因修复（自动提取纯 JSON）、verify 模式多 job 并发支持（offset_increment 区域隔离）、SMART 介质错误警告模式、GUI 布局彻底修复 |
 | V1.8.4 | RW 读/写测试四项修复（fio check=False、SMART 警告、add_detail 修复、底部布局初步修复） |
 | **V1.8.3** | OSINT 9 项 Bug 修复（fio 参数、文件系统保护、SMART 警告模式、状态自动重置、自动 fsck 修复、nvme flush 等） |
 | V1.8.0~V1.8.2 | 多任务批量性能测试、GUI 任务管理面板、UI 交互优化、底部按钮布局修复 |
-| **V1.7.5** | 修复稳态预处理随机写超时不足的问题，FOB/稳态性能测试稳定版 |
+| **V1.7.5** | 修复稳态预处理随机写超时不足的问题，FOB/稳态性能测试稳定版（伪FOB） |
 | V1.6.0 | 新增 CrystalDiskMark 风格性能测试配置+GUI 控制（因不满足读写比例控制需求已舍弃） |
 | **V1.5.3** | SMART 介质错误误判修复，SMART+容量稳定版 |
 | V1.0 ~ V1.4 | 逐步迭代各测试项基础功能 |
