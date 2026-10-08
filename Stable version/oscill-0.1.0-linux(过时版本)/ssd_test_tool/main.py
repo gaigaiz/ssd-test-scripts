@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 SSD 自动化测试工具 (Modular Edition)
@@ -84,10 +84,6 @@ from .testers.os_interruption import OSInterruptionTester
 from .testers.read_write import ReadWriteTester
 from .testers.power import PowerTester
 from .gui.main_window import SSDTestGUI
-
-# 包根目录（ssd_test_tool/），用于默认报告/日志路径
-_PACKAGE_ROOT = os.path.dirname(os.path.abspath(__file__))
-_DEFAULT_REPORT_DIR = os.path.join(_PACKAGE_ROOT, "reports")
 
 
 def parse_args() -> argparse.Namespace:

@@ -1,0 +1,14 @@
+# SSD Test Tool - Dependencies
+# Python >= 3.10 required
+
+# === ssd_test core (mostly stdlib) ===
+pyserial>=3.5          # SPOR Timeboard serial control
+
+# === oscill power measurement module ===
+pyvisa>=1.14            # VISA instrument communication
+PyQt5>=5.15,<6          # oscill GUI
+pyqtgraph>=0.13,<0.14   # oscill plotting
+numpy>=1.20             # oscill data processing
+
+# === Optional ===
+# pyvisa-py>=0.7       # Pure Python VISA backend (alternative to NI-VISA)

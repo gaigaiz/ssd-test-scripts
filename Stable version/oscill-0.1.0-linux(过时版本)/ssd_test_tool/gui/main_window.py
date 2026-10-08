@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """SSD Test Tool - GUI Main Window (SSDTestGUI)
 
@@ -100,8 +100,6 @@ class SSDTestGUI:
         self._skip_precondition: bool = False  # v1.9.2: 状态一致时跳过预处理标志
         self.ssd_state_label: Optional["ttk.Label"] = None  # 状态显示标签引用
         self.ssd_state_color_label: Optional["tk.Label"] = None  # 带颜色的状态标签
-        # ssd_test_tool 包根目录，用于默认报告路径
-        self._ssd_test_tool_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
         # 构建界面
         self._build_menu()
@@ -696,21 +694,19 @@ class SSDTestGUI:
         """清空所有任务。"""
         if not self.perf_tasks:
             return
-        tr = self.translator.tr
-        if messagebox.askyesno(tr("dialog.confirm"), tr("dialog.clear_tasks_confirm").format(count=len(self.perf_tasks))):
+        if messagebox.askyesno("确认", f"确定清空全部 {len(self.perf_tasks)} 组任务吗？"):
             self.perf_tasks.clear()
             self._refresh_task_list()
 
     def _export_tasks_json(self):
         """导出任务列表为 JSON 文件，可供 CLI --perf-task-file 使用。"""
-        tr = self.translator.tr
         if not self.perf_tasks:
-            messagebox.showinfo(tr("dialog.info"), tr("dialog.task_list_empty"))
+            messagebox.showinfo("提示", "任务列表为空，无需导出")
             return
         filepath = filedialog.asksaveasfilename(
-            title=tr("dialog.export_tasks_title"),
+            title="导出任务配置",
             defaultextension=".json",
-            filetypes=[(tr("dialog.json_files"), "*.json"), (tr("dialog.all_files"), "*.*")],
+            filetypes=[("JSON 文件", "*.json"), ("所有文件", "*.*")],
             initialfile="perf_tasks.json"
         )
         if not filepath:
@@ -719,9 +715,9 @@ class SSDTestGUI:
             data = [t.to_dict() for t in self.perf_tasks]
             with open(filepath, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-            messagebox.showinfo(tr("dialog.success"), tr("dialog.tasks_exported").format(count=len(self.perf_tasks), path=filepath))
+            messagebox.showinfo("成功", f"已导出 {len(self.perf_tasks)} 组任务到:\n{filepath}")
         except Exception as e:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.export_failed").format(error=e))
+            messagebox.showerror("错误", f"导出失败: {e}")
 
     def _refresh_task_list(self):
         """刷新任务列表显示。"""
@@ -1393,10 +1389,9 @@ class SSDTestGUI:
 
     def _show_device_info(self):
         """显示详细设备信息对话框。"""
-        tr = self.translator.tr
         idx = self.device_combo.current()
         if idx < 0:
-            messagebox.showwarning(tr("dialog.info"), tr("dialog.select_device"))
+            messagebox.showwarning("提示", "请先选择设备")
             return
         device = self.device_list[idx]["path"]
 
@@ -1504,10 +1499,9 @@ class SSDTestGUI:
 
     def _refresh_ssd_state(self):
         """从状态文件刷新当前 SSD 状态显示。"""
-        tr = self.translator.tr
         device = self._get_current_device_path()
         if not device:
-            messagebox.showwarning(tr("dialog.info"), tr("dialog.no_device"))
+            messagebox.showwarning("提示", "请先选择待测设备")
             return
         try:
             serial = get_device_serial(device)
@@ -1523,12 +1517,11 @@ class SSDTestGUI:
 
     def _reset_ssd_state(self):
         """将当前 SSD 状态重置为 Unknown（仅更新本地状态和显示，不操作设备）。"""
-        tr = self.translator.tr
         device = self._get_current_device_path()
         if not device:
-            messagebox.showwarning(tr("dialog.info"), tr("dialog.no_device"))
+            messagebox.showwarning("提示", "请先选择待测设备")
             return
-        if not messagebox.askyesno(tr("dialog.confirm"), tr("dialog.reset_state_confirm")):
+        if not messagebox.askyesno("确认", "确定要将 SSD 状态重置为 Unknown 吗？\n（仅更新状态记录，不操作设备）"):
             return
         try:
             serial = get_device_serial(device)
@@ -1545,18 +1538,20 @@ class SSDTestGUI:
         Args:
             target_state: SSD_STATE_FOB 或 SSD_STATE_STEADY
         """
-        tr = self.translator.tr
         if self.is_running:
-            messagebox.showwarning(tr("dialog.info"), tr("dialog.test_running_stop"))
+            messagebox.showwarning("提示", "测试正在运行中，请先停止当前测试")
             return
         device = self._get_current_device_path()
         if not device:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.no_device"))
+            messagebox.showerror("错误", "请先选择待测设备")
             return
 
-        state_name = "FOB" if target_state == SSD_STATE_FOB else "Steady"
-        if not messagebox.askyesno(tr("dialog.confirm"),
-                                    tr("dialog.enter_state_confirm").format(state=state_name, device=device)):
+        state_name = "FOB" if target_state == SSD_STATE_FOB else "稳态(Steady)"
+        if not messagebox.askyesno("确认",
+                                    f"确定要让 SSD 进入 {state_name} 状态吗？\n\n"
+                                    f"FOB: 执行 NVMe User Data Erase (--ses=1)，将擦除全盘数据\n"
+                                    f"Steady: 执行 WIPC+WDPC 稳态预处理，耗时较长\n\n"
+                                    f"设备: {device}"):
             return
 
         # 构建命令
@@ -1959,14 +1954,13 @@ class SSDTestGUI:
         if self.is_running:
             return
 
-        tr = self.translator.tr
         # 验证
         if self.device_combo.current() < 0:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.no_device"))
+            messagebox.showerror("错误", "请先选择待测设备")
             return
         tests = self._get_selected_tests()
         if not tests:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.no_test_selected"))
+            messagebox.showerror("错误", "请至少选择一个测试项")
             return
 
         # v1.9.2 新增: 性能测试状态校验（仅当选择了性能测试时）
@@ -1992,7 +1986,7 @@ class SSDTestGUI:
                 target_name = "Steady"
             else:  # unknown
                 target_state = SSD_STATE_UNKNOWN
-                target_name = self.translator.tr("state.unknown_direct")
+                target_name = "Unknown (直接测试)"
 
             current_name = self.current_ssd_state.upper()
 
@@ -2005,14 +1999,13 @@ class SSDTestGUI:
                 self._append_log(f"Current SSD state ({current_name}) matches target state ({target_name}), running performance test directly (no re-entry, skip preconditioning)", "info")
             # 分支C: 状态不一致 -> 警告弹窗
             else:
-                tr = self.translator.tr
-                msg = (f"{tr('dialog.state_mismatch_header')}\n\n"
-                       f"{tr('dialog.state_mismatch_current')}: {current_name}\n"
-                       f"{tr('dialog.state_mismatch_target')}: {target_name}\n\n"
-                       f"{tr('dialog.state_mismatch_confirm').format(target=target_name)}\n\n"
-                       f"{tr('dialog.state_mismatch_yes')}\n"
-                       f"{tr('dialog.state_mismatch_no')}")
-                auto_enter = messagebox.askyesno(tr("dialog.state_mismatch_title"), msg)
+                msg = (f"SSD 目前状态与目标状态不一致！\n\n"
+                       f"当前状态: {current_name}\n"
+                       f"目标状态: {target_name}\n\n"
+                       f"请确认是否直接进入 {target_name} 状态再执行后续测试？\n\n"
+                       f"选择[是]: 自动进入目标状态后再进行性能测试\n"
+                       f"选择[否]: 取消测试，请手动控制 SSD 状态后重试")
+                auto_enter = messagebox.askyesno("状态不一致警告", msg)
                 if auto_enter:
                     self._append_log(f"User confirmed auto-enter {target_name} state before testing", "info")
                     self._enter_ssd_state_and_test(target_state, tests)
@@ -2031,7 +2024,8 @@ class SSDTestGUI:
             self._append_log("Only device power measurement selected, no root required, executing directly", "info")
             cmd = self.build_command()
         elif os.geteuid() != 0 and not self.config_vars["dry_run"].get():
-            result = messagebox.askyesno(tr("dialog.permission_title"), tr("dialog.permission_msg"))
+            result = messagebox.askyesno("权限提示",
+                                          "测试需要 root 权限。\n是否使用 pkexec 提权执行？\n\n（也可以先 sudo 启动 GUI）")
             if not result:
                 return
             # 使用 pkexec 提权
@@ -2094,8 +2088,7 @@ class SSDTestGUI:
         if not self.is_running:
             return
 
-        tr = self.translator.tr
-        if not messagebox.askyesno(tr("dialog.stop_title"), tr("dialog.stop_confirm_detail")):
+        if not messagebox.askyesno("确认停止", "确定要停止当前测试吗？\n停止后测试结果可能不完整。"):
             return
 
         self._append_log("\nUser requested to stop test...", "warning")
@@ -2236,24 +2229,23 @@ class SSDTestGUI:
 
     def export_log(self):
         """导出日志到文件。"""
-        tr = self.translator.tr
         content = self.log_text.get("1.0", tk.END)
         if not content.strip():
-            messagebox.showinfo(tr("dialog.info"), tr("dialog.log_empty"))
+            messagebox.showinfo("提示", "日志为空，无需导出")
             return
 
         default_name = f"ssd_test_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        path = filedialog.asksaveasfilename(title=tr("dialog.export_log_title"), defaultextension=".txt",
+        path = filedialog.asksaveasfilename(title="导出日志", defaultextension=".txt",
                                              initialfile=default_name,
-                                             filetypes=[(tr("dialog.text_files"), "*.txt"), (tr("dialog.all_files"), "*.*")])
+                                             filetypes=[("文本文件", "*.txt"), ("所有文件", "*.*")])
         if path:
             try:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(content)
-                messagebox.showinfo(tr("dialog.success"), tr("dialog.log_exported_to").format(path=path))
+                messagebox.showinfo("成功", f"日志已导出到:\n{path}")
                 self.status_var.set(f"日志已导出: {path}")
             except Exception as e:
-                messagebox.showerror(tr("dialog.error"), tr("dialog.export_failed").format(error=e))
+                messagebox.showerror("错误", f"导出失败: {e}")
 
     # ----------------------------------------------------------
     # 配置保存/加载
@@ -2261,7 +2253,6 @@ class SSDTestGUI:
 
     def save_config(self):
         """保存当前配置到 JSON 文件。"""
-        tr = self.translator.tr
         config = {
             "device": self.device_combo.get(),
             "tests": self._get_selected_tests(),
@@ -2273,23 +2264,22 @@ class SSDTestGUI:
             config["params"][key] = var.get()
 
         default_name = f"ssd_test_config_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        path = filedialog.asksaveasfilename(title=tr("dialog.save_config_title"), defaultextension=".json",
+        path = filedialog.asksaveasfilename(title="保存配置", defaultextension=".json",
                                              initialfile=default_name,
-                                             filetypes=[(tr("dialog.json_files"), "*.json"), (tr("dialog.all_files"), "*.*")])
+                                             filetypes=[("JSON 文件", "*.json"), ("所有文件", "*.*")])
         if path:
             try:
                 with open(path, "w", encoding="utf-8") as f:
                     json.dump(config, f, indent=2, ensure_ascii=False)
-                messagebox.showinfo(tr("dialog.success"), tr("dialog.config_saved_to").format(path=path))
+                messagebox.showinfo("成功", f"配置已保存到:\n{path}")
                 self.status_var.set(f"配置已保存: {path}")
             except Exception as e:
-                messagebox.showerror(tr("dialog.error"), tr("dialog.save_failed").format(error=e))
+                messagebox.showerror("错误", f"保存失败: {e}")
 
     def load_config(self):
         """从 JSON 文件加载配置。"""
-        tr = self.translator.tr
-        path = filedialog.askopenfilename(title=tr("dialog.load_config_title"),
-                                           filetypes=[(tr("dialog.json_files"), "*.json"), (tr("dialog.all_files"), "*.*")])
+        path = filedialog.askopenfilename(title="加载配置",
+                                           filetypes=[("JSON 文件", "*.json"), ("所有文件", "*.*")])
         if not path:
             return
 
@@ -2320,10 +2310,10 @@ class SSDTestGUI:
                 self._refresh_task_list()
 
             self._update_cmd_preview()
-            messagebox.showinfo(tr("dialog.success"), tr("dialog.config_loaded_from").format(path=path))
+            messagebox.showinfo("成功", f"配置已加载:\n{path}")
             self.status_var.set(f"配置已加载: {path}")
         except Exception as e:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.load_failed").format(error=e))
+            messagebox.showerror("错误", f"加载失败: {e}")
 
     # ----------------------------------------------------------
     # 其他
@@ -2337,8 +2327,7 @@ class SSDTestGUI:
         try:
             subprocess.Popen(["xdg-open", output_dir])
         except Exception as e:
-            tr = self.translator.tr
-            messagebox.showerror(tr("dialog.error"), tr("dialog.open_dir_failed").format(error=e, path=output_dir))
+            messagebox.showerror("错误", f"打开目录失败: {e}\n目录路径: {output_dir}")
 
 
     def launch_oscill_power_tool(self):
@@ -2401,22 +2390,21 @@ class SSDTestGUI:
 
     def _open_log_file(self):
         """打开最新的详细日志文件。"""
-        tr = self.translator.tr
         log_dir = self.config_vars["log_dir"].get()
         if not os.path.exists(log_dir):
-            messagebox.showinfo(tr("dialog.info"), tr("dialog.log_dir_not_exist").format(path=log_dir))
+            messagebox.showinfo("提示", f"日志目录不存在: {log_dir}")
             return
         # 找到最新的日志文件
         try:
             log_files = [f for f in os.listdir(log_dir) if f.endswith(".log")]
             if not log_files:
-                messagebox.showinfo(tr("dialog.info"), tr("dialog.no_log_files"))
+                messagebox.showinfo("提示", "日志目录中没有 .log 文件")
                 return
             log_files.sort(reverse=True)
             latest_log = os.path.join(log_dir, log_files[0])
             subprocess.Popen(["xdg-open", latest_log])
         except Exception as e:
-            messagebox.showerror(tr("dialog.error"), tr("dialog.open_log_failed").format(error=e))
+            messagebox.showerror("错误", f"打开日志文件失败: {e}")
 
     def _show_help(self):
         """显示使用说明。"""
@@ -2474,13 +2462,12 @@ Python：3.8+（仅标准库，GUI 使用 tkinter）
 本工具通过 subprocess 调用命令行模式执行测试，
 实时显示日志和进度，支持配置保存/加载。
 """
-        messagebox.showinfo(self.translator.tr("dialog.about_title"), about_text)
+        messagebox.showinfo("关于", about_text)
 
     def _on_close(self):
         """窗口关闭事件。"""
         if self.is_running:
-            tr = self.translator.tr
-            if not messagebox.askyesno(tr("dialog.exit_title"), tr("dialog.exit_confirm")):
+            if not messagebox.askyesno("确认退出", "测试正在运行中，确定要退出吗？\n退出将终止当前测试。"):
                 return
             if self.test_process and self.test_process.poll() is None:
                 try:
