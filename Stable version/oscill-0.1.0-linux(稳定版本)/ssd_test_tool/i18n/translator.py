@@ -33,6 +33,7 @@ _I18N_ZH_TEXTS = {
     "menu.open_report_dir": "打开报告目录",
     "menu.launch_power_tool": "启动功耗测量工具",
     "menu.help": "帮助",
+    "menu.tool_usage": "帮助",
     "menu.usage": "使用说明",
     "menu.about": "关于",
 
@@ -234,6 +235,21 @@ _I18N_ZH_TEXTS = {
     "dialog.log_exported": "日志已导出",
     "dialog.about_title": "关于",
     "dialog.about_text": "SSD 自动化测试平台\n版本 v{version}\n\n支持固件、SMART、容量、性能、读写、电源循环、SPOR、OSINT、功耗测量等测试项。",
+    "dialog.about_content": (
+        "SSD 自动化测试上位机\n"
+        "\n"
+        "版本：v{version}\n"
+        "平台：Linux Ubuntu 20.04+\n"
+        "Python：3.8+（仅标准库，GUI 使用 tkinter）\n"
+        "\n"
+        "覆盖测试项：\n"
+        "固件升降级 / SMART健康 / 设备容量 / 性能测试 /\n"
+        "正常电源循环 / 意外电源循环(SPOR) /\n"
+        "操作系统中断(OSINT) / 设备功耗测量\n"
+        "\n"
+        "本工具通过 subprocess 调用命令行模式执行测试，\n"
+        "实时显示日志和进度，支持配置保存/加载。"
+    ),
     "dialog.permission_title": "权限提示",
     "dialog.permission_msg": "测试需要 root 权限。\n是否使用 pkexec 提权执行？\n\n（也可以先 sudo 启动 GUI）",
     "dialog.power_tool_title": "启动功耗测量工具",
@@ -263,6 +279,46 @@ _I18N_ZH_TEXTS = {
     "dialog.reset_state_confirm": "确定要将 SSD 状态重置为 Unknown 吗？\n（仅更新状态记录，不操作设备）",
     "dialog.test_running_stop": "测试正在运行中，请先停止当前测试",
     "dialog.enter_state_confirm": "确定要让 SSD 进入 {state} 状态吗？\n\nFOB: 执行 NVMe User Data Erase (--ses=1)，将擦除全盘数据\nSteady: 执行 WIPC+WDPC 稳态预处理，耗时较长\n\n设备: {device}",
+    "dialog.help_title": "帮助",
+    "dialog.tool_usage_title": "关于",
+    "dialog.help_content": (
+        "SSD 自动化测试上位机 v{version}\n"
+        "\n"
+        "=== 快速开始 ===\n"
+        "1. 点击「扫描设备」，选择待测 SSD\n"
+        "2. 在左侧勾选需要执行的测试项\n"
+        "3. 在右侧参数配置标签页中设置各测试项参数\n"
+        "4. 点击「开始测试」执行\n"
+        "5. 实时查看日志输出和进度\n"
+        "\n"
+        "=== 测试项说明 ===\n"
+        "- 固件升降级：NVMe 固件下载/提交，支持升级和降级\n"
+        "- SMART健康：nvme-cli + smartctl 双源 SMART 检查\n"
+        "- 设备容量：三源交叉校验容量信息\n"
+        "- 性能测试：FOB+稳态 SNIA 规范，fio JSON 解析\n"
+        "- 正常电源循环：IPMI/手动断电，数据完整性校验\n"
+        "- 意外电源循环(SPOR)：Timeboard 硬件意外断电，PLP 验证\n"
+        "- 操作系统中断(OSINT)：S3/S4 休眠唤醒稳定性测试\n"
+        "- 设备功耗测量：示波器采集电压电流，计算功耗\n"
+        "\n"
+        "=== 注意事项 ===\n"
+        "- 破坏性测试会清除磁盘数据，请确认备份\n"
+        "- SPOR 测试需要 Timeboard 硬件继电器\n"
+        "- OSINT 测试会导致系统休眠，建议后台运行\n"
+        "- 建议使用 sudo 启动 GUI 以避免权限提示\n"
+        "\n"
+        "=== 快捷键 ===\n"
+        "F5          扫描设备\n"
+        "Ctrl+S      保存配置\n"
+        "Ctrl+O      加载配置\n"
+        "Ctrl+L      清空日志\n"
+        "\n"
+        "=== 关于 ===\n"
+        "平台：Linux Ubuntu 20.04+\n"
+        "Python：3.8+（仅标准库，GUI 使用 tkinter）\n"
+        "本工具通过 subprocess 调用命令行模式执行测试，\n"
+        "实时显示日志和进度，支持配置保存/加载。"
+    ),
     "dialog.stop_title": "确认停止",
     "dialog.stop_confirm_detail": "确定要停止当前测试吗？\n停止后测试结果可能不完整。",
     "dialog.log_empty": "日志为空，无需导出",
@@ -319,6 +375,7 @@ _I18N_EN_TEXTS = {
     "menu.open_report_dir": "Open Report Dir",
     "menu.launch_power_tool": "Launch Power Tool",
     "menu.help": "Help",
+    "menu.tool_usage": "Help",
     "menu.usage": "Usage",
     "menu.about": "About",
 
@@ -520,6 +577,21 @@ _I18N_EN_TEXTS = {
     "dialog.log_exported": "Log exported",
     "dialog.about_title": "About",
     "dialog.about_text": "SSD Automated Test Platform\nVersion v{version}\n\nSupports firmware, SMART, capacity, performance, R/W, power cycle, SPOR, OSINT, power measurement tests.",
+    "dialog.about_content": (
+        "SSD Automated Test Platform\n"
+        "\n"
+        "Version: v{version}\n"
+        "Platform: Linux Ubuntu 20.04+\n"
+        "Python: 3.8+ (stdlib only, GUI uses tkinter)\n"
+        "\n"
+        "Supported Test Items:\n"
+        "Firmware Upgrade/Downgrade / SMART Health / Device Capacity / Performance Test /\n"
+        "Normal Power Cycle / Surprise Power Off (SPOR) /\n"
+        "OS Interruption (OSINT) / Device Power Measurement\n"
+        "\n"
+        "This tool executes tests via subprocess CLI mode,\n"
+        "displays logs and progress in real time, supports config save/load."
+    ),
     "dialog.permission_title": "Permission",
     "dialog.permission_msg": "Test requires root permission.\nUse pkexec to elevate?\n\n(Or launch GUI with sudo)",
     "dialog.power_tool_title": "Launch Power Tool",
@@ -549,6 +621,46 @@ _I18N_EN_TEXTS = {
     "dialog.reset_state_confirm": "Are you sure you want to reset SSD state to Unknown?\n(Only updates state record, does not operate device)",
     "dialog.test_running_stop": "Test is running, please stop current test first",
     "dialog.enter_state_confirm": "Are you sure you want to enter SSD {state} state?\n\nFOB: Execute NVMe User Data Erase (--ses=1), will erase all disk data\nSteady: Execute WIPC+WDPC steady-state preconditioning, takes longer\n\nDevice: {device}",
+    "dialog.help_title": "Help",
+    "dialog.tool_usage_title": "About",
+    "dialog.help_content": (
+        "SSD Automated Test Platform v{version}\n"
+        "\n"
+        "=== Quick Start ===\n"
+        "1. Click 'Scan Devices' and select the SSD under test\n"
+        "2. Check the test items to execute on the left\n"
+        "3. Configure parameters in the tabs on the right\n"
+        "4. Click 'Start Test' to execute\n"
+        "5. View log output and progress in real time\n"
+        "\n"
+        "=== Test Items ===\n"
+        "- Firmware Upgrade/Downgrade: NVMe firmware download/commit\n"
+        "- SMART Health: nvme-cli + smartctl dual-source SMART check\n"
+        "- Device Capacity: three-source cross-validation\n"
+        "- Performance Test: FOB+Steady SNIA spec, fio JSON parsing\n"
+        "- Normal Power Cycle: IPMI/manual power off, data integrity\n"
+        "- Surprise Power Off (SPOR): Timeboard hardware power loss, PLP\n"
+        "- OS Interruption (OSINT): S3/S4 sleep/wake stability test\n"
+        "- Device Power Measurement: oscilloscope voltage/current, power calc\n"
+        "\n"
+        "=== Notes ===\n"
+        "- Destructive tests erase disk data, please backup first\n"
+        "- SPOR test requires Timeboard hardware relay\n"
+        "- OSINT test causes system sleep, recommend background run\n"
+        "- Recommend launching GUI with sudo to avoid permission prompts\n"
+        "\n"
+        "=== Shortcuts ===\n"
+        "F5          Scan Devices\n"
+        "Ctrl+S      Save Config\n"
+        "Ctrl+O      Load Config\n"
+        "Ctrl+L      Clear Log\n"
+        "\n"
+        "=== About ===\n"
+        "Platform: Linux Ubuntu 20.04+\n"
+        "Python: 3.8+ (stdlib only, GUI uses tkinter)\n"
+        "This tool executes tests via subprocess CLI mode,\n"
+        "displays logs and progress in real time, supports config save/load."
+    ),
     "dialog.stop_title": "Confirm Stop",
     "dialog.stop_confirm_detail": "Are you sure you want to stop the current test?\nTest results may be incomplete after stopping.",
     "dialog.log_empty": "Log is empty, nothing to export",

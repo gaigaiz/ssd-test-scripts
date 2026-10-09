@@ -141,11 +141,10 @@ class SSDTestGUI:
         self._menu_tools.add_command(label=tr("menu.launch_power_tool"), command=self.launch_oscill_power_tool, accelerator="Ctrl+P")
         self._menubar.add_cascade(label=tr("menu.tools"), menu=self._menu_tools)
 
-        # 帮助菜单
-        self._menu_help = tk.Menu(self._menubar, tearoff=0)
-        self._menu_help.add_command(label=tr("menu.usage"), command=self._show_help)
-        self._menu_help.add_command(label=tr("menu.about"), command=self._show_about)
-        self._menubar.add_cascade(label=tr("menu.help"), menu=self._menu_help)
+        # 帮助菜单（关于）
+        self._menu_tool_usage = tk.Menu(self._menubar, tearoff=0)
+        self._menu_tool_usage.add_command(label=tr("dialog.tool_usage_title"), command=self._show_about)
+        self._menubar.add_cascade(label=tr("menu.tool_usage"), menu=self._menu_tool_usage)
 
         self.root.config(menu=self._menubar)
 
@@ -1160,8 +1159,8 @@ class SSDTestGUI:
         self._tr_widget(ttk.Label(frame, text=tr("label.operation_guide"), font=("TkDefaultFont", 9, "bold")), "label.operation_guide").grid(row=row, column=0, columnspan=3, sticky=tk.W, pady=2)
         row += 1
         help_text = tr("power.help_text")
-        ttk.Label(frame, text=help_text, foreground="gray", justify=tk.LEFT,
-                  font=("TkDefaultFont", 8)).grid(row=row, column=0, columnspan=3, sticky=tk.W, pady=2)
+        self._tr_widget(ttk.Label(frame, text=help_text, foreground="gray", justify=tk.LEFT,
+                  font=("TkDefaultFont", 8)), "power.help_text").grid(row=row, column=0, columnspan=3, sticky=tk.W, pady=2)
 
 
 
@@ -1211,13 +1210,14 @@ class SSDTestGUI:
         self.root.title(tr("app.title") + f" v{SCRIPT_VERSION}")
 
         # ---- 菜单栏 ----
-        # 文件菜单: 索引 0=保存配置, 1=加载配置, 2=separator, 3=导出日志, 4=separator, 5=退出
+        # 注意：Linux 上菜单栏级联菜单索引从 1 开始（不是 0）
+        # 文件菜单: 子项索引 0=保存配置, 1=加载配置, 2=separator, 3=导出日志, 4=separator, 5=退出
         try:
             self._menu_file.entryconfigure(0, label=tr("menu.save_config"))
             self._menu_file.entryconfigure(1, label=tr("menu.load_config"))
             self._menu_file.entryconfigure(3, label=tr("menu.export_log"))
             self._menu_file.entryconfigure(5, label=tr("menu.exit"))
-            self._menubar.entryconfigure(0, label=tr("menu.file"))
+            self._menubar.entryconfigure(1, label=tr("menu.file"))
         except Exception:
             pass
         # 工具菜单: 0=扫描设备, 1=清空日志, 2=打开报告目录, 3=separator, 4=启动功耗测量工具
@@ -1226,14 +1226,13 @@ class SSDTestGUI:
             self._menu_tools.entryconfigure(1, label=tr("menu.clear_log"))
             self._menu_tools.entryconfigure(2, label=tr("menu.open_report_dir"))
             self._menu_tools.entryconfigure(4, label=tr("menu.launch_power_tool"))
-            self._menubar.entryconfigure(1, label=tr("menu.tools"))
+            self._menubar.entryconfigure(2, label=tr("menu.tools"))
         except Exception:
             pass
-        # 帮助菜单: 0=使用说明, 1=关于
+        # 帮助菜单: 0=关于
         try:
-            self._menu_help.entryconfigure(0, label=tr("menu.usage"))
-            self._menu_help.entryconfigure(1, label=tr("menu.about"))
-            self._menubar.entryconfigure(2, label=tr("menu.help"))
+            self._menu_tool_usage.entryconfigure(0, label=tr("dialog.tool_usage_title"))
+            self._menubar.entryconfigure(3, label=tr("menu.tool_usage"))
         except Exception:
             pass
 
@@ -1626,7 +1625,7 @@ class SSDTestGUI:
 
     def _on_state_change_finished(self, returncode: int, target_state: str):
         """状态切换完成回调。"""
-        state_name = "FOB" if target_state == SSD_STATE_FOB else "稳态(Steady)"
+        state_name = "FOB" if target_state == SSD_STATE_FOB else "Steady"
         if returncode == 0:
             self.current_ssd_state = target_state
             self._update_state_display(target_state, f"已进入 {state_name} 状态")
@@ -1648,7 +1647,7 @@ class SSDTestGUI:
         if not device:
             return
 
-        state_name = "FOB" if target_state == SSD_STATE_FOB else "稳态(Steady)"
+        state_name = "FOB" if target_state == SSD_STATE_FOB else "Steady"
         self._package_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         action = "enter-fob" if target_state == SSD_STATE_FOB else "enter-steady"
         cmd = [sys.executable, "-m", "ssd_test_tool.main", "-d", device, "--action", action, "-y"]
@@ -1710,7 +1709,7 @@ class SSDTestGUI:
 
     def _on_state_change_for_test_finished(self, returncode: int, target_state: str, tests: List[str]):
         """状态切换完成后自动启动测试的回调。"""
-        state_name = "FOB" if target_state == SSD_STATE_FOB else "稳态(Steady)"
+        state_name = "FOB" if target_state == SSD_STATE_FOB else "Steady"
         if returncode != 0:
             self._append_log(f"Failed to enter {state_name} state (exit code: {returncode}), test cancelled", "error")
             self._reset_ui_state()
@@ -2418,63 +2417,23 @@ class SSDTestGUI:
         except Exception as e:
             messagebox.showerror(tr("dialog.error"), tr("dialog.open_log_failed").format(error=e))
 
-    def _show_help(self):
-        """显示使用说明。"""
-        help_text = f"""SSD 自动化测试上位机 v{SCRIPT_VERSION}
-
-【快速开始】
-1. 点击「扫描设备」，选择待测 SSD
-2. 在左侧勾选需要执行的测试项
-3. 在右侧参数配置标签页中设置各测试项参数
-4. 点击「开始测试」执行
-5. 实时查看日志输出和进度
-
-【测试项说明】
-- 固件升降级：NVMe 固件下载/提交，支持升级和降级
-- SMART健康：nvme-cli + smartctl 双源 SMART 检查
-- 设备容量：三源交叉校验容量信息
-- 性能测试：FOB+稳态 SNIA 规范，fio JSON 解析
-- 正常电源循环：IPMI/手动断电，数据完整性校验
-- 意外电源循环(SPOR)：Timeboard 硬件意外断电，PLP 验证
-- 操作系统中断(OSINT)：S3/S4 休眠唤醒稳定性测试
-
-【注意事项】
-- 破坏性测试会清除磁盘数据，请确认备份
-- SPOR 测试需要 Timeboard 硬件继电器
-- OSINT 测试会导致系统休眠，建议后台运行
-- 建议使用 sudo 启动 GUI 以避免权限提示
-
-【快捷键】
-F5          扫描设备
-Ctrl+S      保存配置
-Ctrl+O      加载配置
-Ctrl+L      清空日志
-"""
+    def _show_tool_usage(self):
+        """显示工具使用说明对话框（支持 i18n）。"""
+        tr = self.translator.tr
+        help_text = tr("dialog.help_content").format(version=SCRIPT_VERSION)
         win = tk.Toplevel(self.root)
-        win.title("使用说明")
-        win.geometry("650x550")
+        win.title(tr("dialog.tool_usage_title"))
+        win.geometry("680x620")
         text = scrolledtext.ScrolledText(win, wrap=tk.WORD, font=("TkDefaultFont", 10))
         text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         text.insert(tk.END, help_text)
         text.config(state=tk.DISABLED)
 
     def _show_about(self):
-        """显示关于对话框。"""
-        about_text = f"""SSD 自动化测试上位机
-
-版本：v{SCRIPT_VERSION}
-平台：Linux Ubuntu 20.04+
-Python：3.8+（仅标准库，GUI 使用 tkinter）
-
-覆盖 7 大测试项：
-固件升降级 / SMART / 容量 / 性能 /
-正常电源循环 / 意外电源循环(SPOR) /
-操作系统中断(OSINT)
-
-本工具通过 subprocess 调用命令行模式执行测试，
-实时显示日志和进度，支持配置保存/加载。
-"""
-        messagebox.showinfo(self.translator.tr("dialog.about_title"), about_text)
+        """显示关于对话框（支持 i18n）。"""
+        tr = self.translator.tr
+        about_text = tr("dialog.about_content").format(version=SCRIPT_VERSION)
+        messagebox.showinfo(tr("dialog.about_title"), about_text)
 
     def _on_close(self):
         """窗口关闭事件。"""
